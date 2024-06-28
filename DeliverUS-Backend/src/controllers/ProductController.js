@@ -107,12 +107,28 @@ const popular = async function (req, res) {
   }
 }
 
+const destacar = async function (req, res) {
+  try {
+    const numeroDestacados = await Product.findAll({ where: { destacado: true } })
+    if (numeroDestacados.length >= 5) {
+      const primerDestacado = await Product.findOne({ where: { destacado: true }, order: [['createdAt', 'ASC']] })
+
+      await Product.update({ destacado: false }, { where: { id: primerDestacado.id } })
+    }
+    await Product.update({ destacado: true }, { where: { id: req.params.productId } })
+    res.status(200).send('Product highlighted successfully')
+  } catch (error) {
+    res.status(500).send(error)
+  }
+}
+
 const ProductController = {
   indexRestaurant,
   show,
   create,
   update,
   destroy,
-  popular
+  popular,
+  destacar
 }
 export default ProductController

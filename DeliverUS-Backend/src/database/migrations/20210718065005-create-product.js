@@ -14,6 +14,10 @@ module.exports = {
       description: {
         type: Sequelize.TEXT
       },
+      destacado: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       price: {
         allowNull: false,
         type: Sequelize.DOUBLE

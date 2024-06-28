@@ -21,6 +21,10 @@ const loadModel = (sequelize, DataTypes) => {
   Product.init({
     name: DataTypes.STRING,
     description: DataTypes.STRING,
+    destacado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     price: DataTypes.DOUBLE,
     image: DataTypes.STRING,
     order: DataTypes.INTEGER,

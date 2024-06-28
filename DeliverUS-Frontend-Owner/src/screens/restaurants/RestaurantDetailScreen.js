@@ -4,7 +4,7 @@ import { StyleSheet, View, FlatList, ImageBackground, Image, Pressable } from 'r
 import { showMessage } from 'react-native-flash-message'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import { getDetail } from '../../api/RestaurantEndpoints'
-import { remove } from '../../api/ProductEndpoints'
+import { destacar, remove } from '../../api/ProductEndpoints'
 import ImageCard from '../../components/ImageCard'
 import TextRegular from '../../components/TextRegular'
 import TextSemiBold from '../../components/TextSemibold'
@@ -62,6 +62,19 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       >
         <TextRegular numberOfLines={2}>{item.description}</TextRegular>
         <TextSemiBold textStyle={styles.price}>{item.price.toFixed(2)}€</TextSemiBold>
+
+        <View style={{ marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }} >
+          {item.destacado && < MaterialCommunityIcons name='star' color={'black'} size={16}/>}
+          <TextRegular> </TextRegular>
+            {item.destacado &&
+              <TextRegular style={[styles.badge, { width: 80, color: '#907F00', borderColor: '#907F00' }]}>Favorite ON!</TextRegular>
+            }
+            {!item.destacado &&
+              <TextRegular style={[styles.badge, { width: 80, color: '#000000', borderColor: '#000000' }]}>Not favorite</TextRegular>
+            }
+
+        </View>
+
         {!item.availability &&
           <TextRegular textStyle={styles.availability }>Not available</TextRegular>
         }
@@ -99,6 +112,24 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
             <MaterialCommunityIcons name='delete' color={'white'} size={20}/>
             <TextRegular textStyle={styles.text}>
               Delete
+            </TextRegular>
+          </View>
+        </Pressable>
+
+        <Pressable
+            onPress={() => { destacarProducto(item) }}
+            style={({ pressed }) => [
+              {
+                backgroundColor: pressed
+                  ? GlobalStyles.brandSuccessTap
+                  : GlobalStyles.brandSuccess
+              },
+              styles.actionButton
+            ]}>
+          <View style={[{ flex: 1, flexDirection: 'row', justifyContent: 'center' }]}>
+            <MaterialCommunityIcons name={item.destacado ? 'star' : 'star-outline'} color={'white'} size={20}/>
+            <TextRegular textStyle={styles.text}>
+              Destacar
             </TextRegular>
           </View>
         </Pressable>
@@ -145,6 +176,27 @@ export default function RestaurantDetailScreen ({ navigation, route }) {
       setProductToBeDeleted(null)
       showMessage({
         message: `Product ${product.name} could not be removed.`,
+        type: 'error',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    }
+  }
+
+  const destacarProducto = async (product) => {
+    try {
+      await destacar(product.id)
+      await fetchRestaurantDetail()
+      showMessage({
+        message: `Product ${product.name} succesfully highlighted`,
+        type: 'success',
+        style: GlobalStyles.flashStyle,
+        titleStyle: GlobalStyles.flashTextStyle
+      })
+    } catch (error) {
+      console.log(error)
+      showMessage({
+        message: `Product ${product.name} could not be highlighted.`,
         type: 'error',
         style: GlobalStyles.flashStyle,
         titleStyle: GlobalStyles.flashTextStyle
@@ -237,12 +289,21 @@ const styles = StyleSheet.create({
     padding: 10,
     alignSelf: 'center',
     flexDirection: 'column',
-    width: '50%'
+    width: '33%'
   },
   actionButtonsContainer: {
     flexDirection: 'row',
     bottom: 5,
     position: 'absolute',
     width: '90%'
+  },
+  badge: {
+    textAlign: 'center',
+    borderWidth: 2,
+    width: 45,
+    paddingVertical: 2,
+    paddingHorizontal: 10,
+    borderRadius: 10,
+    marginTop: -10
   }
 })
